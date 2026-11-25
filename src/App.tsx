@@ -1,5 +1,10 @@
+import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
 import weddingPhoto from './assets/wedding-cover.jpg'
+import gardenPhoto from './assets/wedding-garden.jpg'
+import bouquetPhoto from './assets/wedding-bouquet.jpg'
+import veilPhoto from './assets/wedding-veil.jpg'
+import portraitPhoto from './assets/wedding-portrait.jpg'
 
 const invitation = {
   groom: '박정진',
@@ -10,6 +15,140 @@ const invitation = {
 }
 
 const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+const gallery = [
+  { src: gardenPhoto, alt: '꽃 아치 아래 선 커플' },
+  { src: bouquetPhoto, alt: '흰 꽃다발과 결혼반지' },
+  { src: veilPhoto, alt: '햇살에 비친 웨딩 베일' },
+  { src: portraitPhoto, alt: '손을 잡고 걷는 커플' },
+  { src: weddingPhoto, alt: '밝은 예식장으로 걸어가는 커플' },
+]
+
+const seoulDate = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+function daysUntil(date: string) {
+  const parts = seoulDate.formatToParts(new Date())
+  const today = ['year', 'month', 'day'].map(unit => parts.find(part => part.type === unit)?.value).join('-')
+  return (Date.parse(date) - Date.parse(today)) / 86_400_000
+}
+
+function Countdown({ date }: { date: string }) {
+  const [days, setDays] = useState(() => daysUntil(date))
+
+  useEffect(() => {
+    const update = () => setDays(daysUntil(date))
+    update()
+    const timer = window.setInterval(update, 1000)
+    return () => window.clearInterval(timer)
+  }, [date])
+
+  return <p className="invitation__countdown">{days === 0 ? 'D-DAY' : `D${days > 0 ? '-' : '+'}${Math.abs(days)}`}</p>
+}
+
+type GuestMessage = { id: string; name: string; message: string; passwordHash: string }
+const messageStorage = 'wedding-invitation-guest-messages'
+
+function readMessages(): GuestMessage[] {
+  const value: unknown = JSON.parse(localStorage.getItem(messageStorage) ?? '[]')
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is GuestMessage =>
+    entry && [entry.id, entry.name, entry.message, entry.passwordHash].every(field => typeof field === 'string'))
+}
+
+async function messagePassword(id: string, password: string) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${id}:${password}`))
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function Guestbook() {
+  const [messages, setMessages] = useState(() => {
+    try { return readMessages() } catch { return [] }
+  })
+  const [feedback, setFeedback] = useState('')
+  const [pending, setPending] = useState(false)
+  const [deleteId, setDeleteId] = useState<string>()
+
+  async function submitMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const data = new FormData(form)
+    const name = String(data.get('name')).trim()
+    const message = String(data.get('message')).trim()
+    if (!name || !message) {
+      setFeedback('이름과 메시지를 입력해 주세요.')
+      return
+    }
+
+    setPending(true)
+    try {
+      const id = crypto.randomUUID()
+      const passwordHash = await messagePassword(id, String(data.get('password')))
+      const next = [{ id, name, message, passwordHash }, ...readMessages()]
+      localStorage.setItem(messageStorage, JSON.stringify(next))
+      setMessages(next)
+      form.reset()
+      setFeedback('축하 메시지를 저장했습니다.')
+    } catch {
+      setFeedback('이 브라우저에서 메시지를 저장하지 못했습니다.')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  async function deleteMessage(event: FormEvent<HTMLFormElement>, entry: GuestMessage) {
+    event.preventDefault()
+    const password = String(new FormData(event.currentTarget).get('deletePassword'))
+    setPending(true)
+    try {
+      if (await messagePassword(entry.id, password) !== entry.passwordHash) {
+        setFeedback('비밀번호를 확인해 주세요.')
+        return
+      }
+      const next = readMessages().filter(message => message.id !== entry.id)
+      localStorage.setItem(messageStorage, JSON.stringify(next))
+      setMessages(next)
+      setDeleteId(undefined)
+      setFeedback('축하 메시지를 삭제했습니다.')
+    } catch {
+      setFeedback('메시지를 삭제하지 못했습니다.')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <section className="invitation__section" aria-labelledby="guestbook-title">
+      <h2 id="guestbook-title">축하 메시지</h2>
+      <p className="guestbook__note">메시지는 이 브라우저에 저장됩니다.</p>
+      <form className="guestbook__form" onSubmit={submitMessage}>
+        <label>이름<input name="name" required maxLength={40} autoComplete="name" /></label>
+        <label>삭제용 비밀번호<input name="password" type="password" required minLength={4} maxLength={80} autoComplete="new-password" /></label>
+        <label>메시지<textarea name="message" required maxLength={500} rows={4} /></label>
+        <button className="invitation__button" disabled={pending}>축하 메시지 남기기</button>
+      </form>
+      <p role="status" className="guestbook__note">{feedback}</p>
+      <ul className="guestbook__messages">
+        {messages.map(entry => (
+          <li key={entry.id}>
+            <strong>{entry.name}</strong>
+            <p>{entry.message}</p>
+            {deleteId === entry.id ? (
+              <form className="guestbook__form" onSubmit={event => deleteMessage(event, entry)}>
+                <label>삭제용 비밀번호<input name="deletePassword" type="password" required maxLength={80} /></label>
+                <button className="invitation__button" disabled={pending}>메시지 삭제</button>
+                <button type="button" className="invitation__button" onClick={() => setDeleteId(undefined)}>취소</button>
+              </form>
+            ) : <button type="button" className="guestbook__delete" onClick={() => { setDeleteId(entry.id); setFeedback('') }}>삭제</button>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 
 function WeddingCalendar({ date }: { date: string }) {
   const [year, month, weddingDay] = date.split('-').map(Number)
@@ -66,6 +205,38 @@ function App() {
           <p>{invitation.venue}</p>
         </div>
         <WeddingCalendar date={invitation.date} />
+        <Countdown date={invitation.date} />
+        <section className="invitation__section" aria-labelledby="gallery-title">
+          <div className="invitation__photo-strip">
+            {gallery.slice(0, 3).map(photo => <img key={photo.src} {...photo} loading="lazy" />)}
+          </div>
+          <h2 id="gallery-title" lang="en">GALLERY</h2>
+          <details className="invitation__album">
+            <summary className="invitation__button">갤러리 더보기</summary>
+            <div className="invitation__album-grid">
+              {gallery.map(photo => <a key={photo.src} href={photo.src}><img {...photo} loading="lazy" /></a>)}
+            </div>
+          </details>
+        </section>
+        <section className="invitation__section" aria-labelledby="invitation-title">
+          <h2 id="invitation-title" lang="en">WEDDING INVITATION</h2>
+          <p className="invitation__letter">
+            <span>오랜 시간 서로의 곁을 지켜온 두 사람이</span>
+            <span>이제 같은 곳을 바라보며 평생을 약속합니다.</span>
+            <span>저희의 새로운 시작을 함께 축복해 주세요.</span>
+          </p>
+          <div className="invitation__couple">
+            <span><small lang="en">GROOM</small>{invitation.groom}</span>
+            <span className="invitation__heart" aria-hidden="true">♥</span>
+            <span><small lang="en">BRIDE</small>{invitation.bride}</span>
+          </div>
+          <img className="invitation__photo" src={portraitPhoto} alt="손을 잡고 걷는 커플의 웨딩 샘플 사진" loading="lazy" />
+          <div className="invitation__details invitation__details--bottom">
+            <time dateTime={invitation.date}>{invitation.dateLabel}</time>
+            <p>{invitation.venue}</p>
+          </div>
+        </section>
+        <Guestbook />
       </div>
     </main>
   )

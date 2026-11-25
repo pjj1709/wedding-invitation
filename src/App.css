@@ -168,3 +168,160 @@
   color: #fff;
   font-weight: 700;
 }
+
+.invitation__countdown {
+  margin-top: 1rem;
+  color: #695741;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+
+.invitation__section {
+  width: 100%;
+  min-width: 0;
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid #75634d40;
+}
+
+.invitation__section h2 {
+  margin: 0 0 1rem;
+  font-family: Georgia, 'Batang', serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.invitation__photo-strip,
+.invitation__album-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.invitation__photo-strip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.invitation__album-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.invitation__photo-strip img,
+.invitation__album-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+
+.invitation__button {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #75634d66;
+  border-radius: 1.5rem;
+  background: #fffdf9;
+  color: #4f4132;
+  font: inherit;
+  cursor: pointer;
+}
+
+.invitation__button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.invitation__letter {
+  display: grid;
+  gap: 0.3rem;
+  word-break: keep-all;
+}
+
+.invitation__couple {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  font-size: 1.2rem;
+}
+
+.invitation__couple small {
+  display: block;
+  color: #695741;
+  font-size: 0.75em;
+  letter-spacing: 0.12em;
+}
+
+.invitation__details--bottom {
+  margin-inline: auto;
+}
+
+.guestbook__form {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.guestbook__form label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.guestbook__form input,
+.guestbook__form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #817361;
+  border-radius: 0.65rem;
+  background: #fffcf8;
+  color: inherit;
+  font: inherit;
+}
+
+.guestbook__form textarea {
+  resize: vertical;
+}
+
+.guestbook__note {
+  margin-top: 0.65rem;
+  color: #695741;
+  font-size: 0.875rem;
+}
+
+.guestbook__messages {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.guestbook__messages li {
+  padding: 1rem;
+  border: 1px solid #75634d40;
+  border-radius: 1rem;
+  background: #ffffffa8;
+  overflow-wrap: anywhere;
+}
+
+.guestbook__messages p {
+  white-space: pre-wrap;
+}
+
+.guestbook__delete {
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #695741;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
