@@ -1,17 +1,17 @@
 import './App.css'
 
 const invitation = {
-  groom: '김도윤',
-  bride: '이서연',
-  dateTime: '2027-05-22T14:00:00+09:00',
-  dateLabel: '2027년 5월 22일 토요일 오후 2시',
-  venue: '봄빛 웨딩홀 2층 가든홀',
+  groom: '박정진',
+  bride: '윤수빈',
+  date: '2027-04-10',
+  dateLabel: '2027.04.10 토요일',
+  venue: '평택 JnJ 아트컨벤션웨딩홀 2층 카넬리안노아',
 }
 
 function App() {
   return (
     <main className="invitation">
-      <div className="invitation__arch">
+      <div className="invitation__glass">
         <span className="invitation__ornament" aria-hidden="true">✦</span>
         <h1 className="invitation__names">
           <span>{invitation.groom}</span>
@@ -22,7 +22,7 @@ function App() {
           저희 두 사람의 결혼식에 초대합니다.
         </p>
         <div className="invitation__details">
-          <time dateTime={invitation.dateTime}>{invitation.dateLabel}</time>
+          <time dateTime={invitation.date}>{invitation.dateLabel}</time>
           <p>{invitation.venue}</p>
         </div>
       </div>
