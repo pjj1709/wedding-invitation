@@ -49,31 +49,42 @@ function Countdown({ date }: { date: string }) {
   return <p className="invitation__countdown">{days === 0 ? 'D-DAY' : `D${days > 0 ? '-' : '+'}${Math.abs(days)}`}</p>
 }
 
-type GuestMessage = { id: string; name: string; message: string; passwordHash: string }
-const messageStorage = 'wedding-invitation-guest-messages'
-
-function readMessages(): GuestMessage[] {
-  const value: unknown = JSON.parse(localStorage.getItem(messageStorage) ?? '[]')
-  if (!Array.isArray(value)) return []
-  return value.filter((entry): entry is GuestMessage =>
-    entry && [entry.id, entry.name, entry.message, entry.passwordHash].every(field => typeof field === 'string'))
-}
-
-async function messagePassword(id: string, password: string) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${id}:${password}`))
-  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
-}
+type GuestMessage = { id: string; name: string; message: string }
+const apiUrl = import.meta.env.VITE_GUESTBOOK_API_URL?.trim().replace(/\/+$/, '')
 
 function Guestbook() {
-  const [messages, setMessages] = useState(() => {
-    try { return readMessages() } catch { return [] }
-  })
+  const [messages, setMessages] = useState<GuestMessage[]>([])
+  const [loading, setLoading] = useState(Boolean(apiUrl))
+  const [loadError, setLoadError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [feedback, setFeedback] = useState('')
   const [pending, setPending] = useState(false)
   const [deleteId, setDeleteId] = useState<string>()
 
+  useEffect(() => {
+    if (!apiUrl) return
+    const controller = new AbortController()
+
+    async function loadMessages() {
+      try {
+        const response = await fetch(`${apiUrl}/messages`, { signal: controller.signal })
+        if (!response.ok) throw new Error('Guestbook unavailable')
+        const list = await response.json() as GuestMessage[]
+        if (!controller.signal.aborted) setMessages(list)
+      } catch {
+        if (!controller.signal.aborted) setLoadError(true)
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }
+
+    void loadMessages()
+    return () => controller.abort()
+  }, [loadAttempt])
+
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!apiUrl || pending) return
     const form = event.currentTarget
     const data = new FormData(form)
     const name = String(data.get('name')).trim()
@@ -85,15 +96,22 @@ function Guestbook() {
 
     setPending(true)
     try {
-      const id = crypto.randomUUID()
-      const passwordHash = await messagePassword(id, String(data.get('password')))
-      const next = [{ id, name, message, passwordHash }, ...readMessages()]
-      localStorage.setItem(messageStorage, JSON.stringify(next))
-      setMessages(next)
+      const response = await fetch(`${apiUrl}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message, password: data.get('password'), website: data.get('website') }),
+      })
+      if (response.status === 429) {
+        setFeedback('요청이 많습니다. 잠시 후 다시 시도해 주세요.')
+        return
+      }
+      if (!response.ok) throw new Error('Could not save message')
+      const entry = await response.json() as GuestMessage
+      setMessages(current => [entry, ...current].slice(0, 100))
       form.reset()
       setFeedback('축하 메시지를 저장했습니다.')
     } catch {
-      setFeedback('이 브라우저에서 메시지를 저장하지 못했습니다.')
+      setFeedback('메시지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
     } finally {
       setPending(false)
     }
@@ -101,16 +119,25 @@ function Guestbook() {
 
   async function deleteMessage(event: FormEvent<HTMLFormElement>, entry: GuestMessage) {
     event.preventDefault()
+    if (!apiUrl || pending) return
     const password = String(new FormData(event.currentTarget).get('deletePassword'))
     setPending(true)
     try {
-      if (await messagePassword(entry.id, password) !== entry.passwordHash) {
+      const response = await fetch(`${apiUrl}/messages/${encodeURIComponent(entry.id)}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      if (response.status === 403) {
         setFeedback('비밀번호를 확인해 주세요.')
         return
       }
-      const next = readMessages().filter(message => message.id !== entry.id)
-      localStorage.setItem(messageStorage, JSON.stringify(next))
-      setMessages(next)
+      if (response.status === 429) {
+        setFeedback('요청이 많습니다. 잠시 후 다시 시도해 주세요.')
+        return
+      }
+      if (!response.ok) throw new Error('Could not delete message')
+      setMessages(current => current.filter(message => message.id !== entry.id))
       setDeleteId(undefined)
       setFeedback('축하 메시지를 삭제했습니다.')
     } catch {
@@ -123,12 +150,19 @@ function Guestbook() {
   return (
     <section className="invitation__section" aria-labelledby="guestbook-title">
       <h2 id="guestbook-title">축하 메시지</h2>
-      <p className="guestbook__note">메시지는 이 브라우저에 저장됩니다.</p>
+      <p className="guestbook__note">{apiUrl ? '작성자 이름과 메시지가 청첩장 방문자에게 공개됩니다.' : '공유 방명록 연결을 준비 중입니다.'}</p>
+      {loading && <p role="status" className="guestbook__note">축하 메시지를 불러오는 중입니다.</p>}
+      {loadError && <button type="button" className="invitation__button" onClick={() => {
+        setLoadError(false)
+        setLoading(true)
+        setLoadAttempt(attempt => attempt + 1)
+      }}>메시지 다시 불러오기</button>}
       <form className="guestbook__form" onSubmit={submitMessage}>
+        <div hidden><input name="website" tabIndex={-1} autoComplete="off" aria-label="웹사이트" /></div>
         <label>이름<input name="name" required maxLength={40} autoComplete="name" /></label>
-        <label>삭제용 비밀번호<input name="password" type="password" required minLength={4} maxLength={80} autoComplete="new-password" /></label>
+        <label>삭제용 비밀번호 (8자 이상)<input name="password" type="password" required minLength={8} maxLength={80} autoComplete="new-password" /></label>
         <label>메시지<textarea name="message" required maxLength={500} rows={4} /></label>
-        <button className="invitation__button" disabled={pending}>축하 메시지 남기기</button>
+        <button className="invitation__button" disabled={!apiUrl || loading || loadError || pending}>축하 메시지 남기기</button>
       </form>
       <p role="status" className="guestbook__note">{feedback}</p>
       <ul className="guestbook__messages">

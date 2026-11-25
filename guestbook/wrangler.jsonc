@@ -1,0 +1,15 @@
+{
+  "name": "wedding-invitation-guestbook",
+  "main": "worker.js",
+  "preview_urls": false,
+  "compatibility_date": "2026-11-25",
+  "vars": { "GUESTBOOK_ORIGIN": "https://pjj1709.github.io" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "wedding-guestbook", "database_id": "d79f941c-e06f-425f-91d4-67aa485da38f" }
+  ],
+  "ratelimits": [
+    { "name": "WRITE_LIMIT", "namespace_id": "1301", "simple": { "limit": 10, "period": 60 } },
+    { "name": "READ_LIMIT", "namespace_id": "1302", "simple": { "limit": 90, "period": 60 } },
+    { "name": "DELETE_LIMIT", "namespace_id": "1303", "simple": { "limit": 12, "period": 60 } }
+  ]
+}

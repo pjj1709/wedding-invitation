@@ -33,4 +33,18 @@ npm.cmd run preview
 
 Vite의 `base`는 `vite.config.ts`에서 `/wedding-invitation/`으로 설정합니다. JSX에서 `public/` 파일을 참조할 때는 `import.meta.env.BASE_URL`을 사용합니다.
 
+## 공유 방명록 설정
+
+청첩장 화면은 GitHub Pages에서 제공하고, 축하 메시지의 조회·등록·삭제는 Cloudflare Worker와 D1에서 처리합니다. 공개 목록에는 최근 100개의 메시지가 표시됩니다. 이전에 브라우저에 저장된 글은 기존 브라우저에 남아 있으며, 공유 목록으로 옮기려면 직접 다시 등록해야 합니다.
+
+1. Cloudflare 계정으로 `npx.cmd wrangler login`을 실행하고, 프로젝트 루트에서 `npx.cmd wrangler d1 create wedding-guestbook --config guestbook/wrangler.jsonc`로 D1을 생성합니다. 생성된 ID로 `guestbook/wrangler.jsonc`의 `database_id`를 교체합니다.
+2. `npx.cmd wrangler d1 migrations apply wedding-guestbook --remote --config guestbook/wrangler.jsonc`로 테이블을 생성합니다.
+3. `npx.cmd wrangler deploy --config guestbook/wrangler.jsonc`로 Worker를 배포한 후 `npx.cmd wrangler secret put GUESTBOOK_SECRET --config guestbook/wrangler.jsonc`으로 충분히 긴 무작위 비밀값을 등록합니다. 이 값을 바꾸면 기존 글의 삭제 비밀번호 검증에 영향을 줍니다.
+4. GitHub 저장소 **Settings → Secrets and variables → Actions → Variables**에서 `VITE_GUESTBOOK_API_URL`을 만들고 Worker의 `https://…workers.dev` 주소를 입력합니다. 이후 GitHub Actions 배포를 실행합니다.
+5. 공개 청첩장에서 테스트 글을 작성하고, 별도 브라우저에서 같은 글을 읽고 삭제할 수 있는지 확인합니다.
+
+Worker는 요청 본문을 8KB로 제한하고, 허용된 청첩장 출처에서만 브라우저의 등록·삭제 요청을 받습니다. IP별 조회 및 쓰기 요청과 메시지별 삭제 시도에 제한을 적용합니다. Cloudflare 요청 제한은 위치별로 집계되는 근사치입니다.
+
+[Cloudflare D1 시작하기](https://developers.cloudflare.com/d1/get-started/) · [D1 마이그레이션](https://developers.cloudflare.com/d1/reference/migrations/)
+
 [GitHub Pages 배포 소스 설정](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) · [Vite 정적 사이트 배포 가이드](https://vite.dev/guide/static-deploy#github-pages)
