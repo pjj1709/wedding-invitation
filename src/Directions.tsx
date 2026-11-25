@@ -10,7 +10,8 @@ const name = encodeURIComponent(venue.name)
 const webMap = `https://map.naver.com/p/search/${encodeURIComponent(venue.address)}`
 const appName = encodeURIComponent('https://pjj1709.github.io/wedding-invitation/')
 const naverNavigation = `nmap://navigation?dlat=${venue.latitude}&dlng=${venue.longitude}&dname=${name}&appname=${appName}`
-const tmapNavigation = `tmap://route?rGoName=${name}&rGoX=${venue.longitude}&rGoY=${venue.latitude}`
+const tmapNavigation = `tmap://route?goalx=${venue.longitude}&goaly=${venue.latitude}&goalname=${name}&carType=1`
+const kakaoDirections = `https://map.kakao.com/link/to/${name},${venue.latitude},${venue.longitude}`
 const naverKey = import.meta.env.VITE_NAVER_MAP_KEY_ID?.trim()
 const kakaoKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY?.trim()
 
@@ -74,7 +75,7 @@ export default function Directions() {
         if (!sdk.isInitialized()) sdk.init(key)
         setKakao(sdk)
       } catch {
-        setNavigationError('카카오내비를 초기화하지 못했습니다.')
+        setKakao(undefined)
       }
     }
     script.addEventListener('load', initialize)
@@ -86,14 +87,12 @@ export default function Directions() {
   }, [])
 
   function openKakao() {
-    if (!kakao) {
-      setNavigationError('카카오내비 연결을 사용할 수 없습니다. 다른 앱이나 웹 지도를 이용해 주세요.')
-      return
-    }
+    if (!kakao) return
     try {
+      setNavigationError('')
       kakao.Navi.start({ name: venue.name, x: venue.longitude, y: venue.latitude, coordType: 'wgs84' })
     } catch {
-      setNavigationError('카카오내비를 열지 못했습니다. 다른 앱이나 웹 지도를 이용해 주세요.')
+      setNavigationError('카카오내비를 열지 못했습니다.')
     }
   }
 
@@ -109,12 +108,20 @@ export default function Directions() {
       <nav aria-label="내비게이션 앱">
         <p className="directions__label" lang="en">NAVIGATION</p>
         <div className="directions__buttons">
-          <button className="invitation__button" type="button" onClick={openKakao}>카카오내비</button>
+          {kakao ? (
+            <button className="invitation__button" type="button" onClick={openKakao}>카카오내비</button>
+          ) : (
+            <a className="invitation__button" href={kakaoDirections}>카카오맵 길찾기</a>
+          )}
           <a className="invitation__button" href={tmapNavigation}>티맵</a>
           <a className="invitation__button" href={naverNavigation}>네이버지도</a>
         </div>
       </nav>
-      {navigationError && <p role="status" className="guestbook__note">{navigationError}</p>}
+      {navigationError && kakao && (
+        <p role="status" className="guestbook__note">
+          {navigationError} <a href={kakaoDirections}>카카오맵 길찾기</a>
+        </p>
+      )}
     </section>
   )
 }

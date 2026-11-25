@@ -37,7 +37,7 @@ Vite의 `base`는 `vite.config.ts`에서 `/wedding-invitation/`으로 설정합�
 
 GitHub 저장소의 **Settings → Secrets and variables → Actions → Variables**에서 `VITE_NAVER_MAP_KEY_ID`에 네이버 클라우드 Maps Web Dynamic Map의 Client ID를, `VITE_KAKAO_JAVASCRIPT_KEY`에 카카오 디벨로퍼스의 JavaScript 키를 등록합니다. 두 서비스의 웹 도메인에 `https://pjj1709.github.io`를 등록하고, 로컬에서 확인할 때는 개발 서버 주소도 등록합니다. 로컬 빌드는 같은 이름의 환경 변수를 사용합니다.
 
-티맵과 네이버지도 버튼은 목적지 좌표가 포함된 모바일 앱 링크를 사용합니다. 앱이 실행되지 않는 환경에서는 오시는 길 섹션의 네이버지도 웹 링크를 이용할 수 있습니다.
+티맵과 네이버지도 버튼은 목적지 좌표가 포함된 모바일 앱 링크를 사용합니다. 카카오 SDK가 초기화되면 카카오내비 버튼이 표시되고, 초기화 전에는 예식장을 도착지로 지정한 카카오맵 길찾기 링크가 표시됩니다. 앱이 실행되지 않는 환경에서는 오시는 길 섹션의 네이버지도 웹 링크를 이용할 수 있습니다.
 
 ## 공유 방명록 설정
 
