@@ -1,75 +1,36 @@
-# React + TypeScript + Vite
+# 모바일 청첩장
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React, TypeScript, Vite, ESLint로 구성한 모바일 청첩장 프로젝트입니다. 현재 화면은 Vite 초기 템플릿입니다. 청첩장 개발과 검증에는 가명과 가상의 예식 정보만 사용합니다.
 
-Currently, two official plugins are available:
+목표 배포 주소는 [GitHub Pages 모바일 청첩장](https://pjj1709.github.io/wedding-invitation/)입니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 로컬 개발
 
-## React Compiler
+워크플로는 Node.js LTS와 npm을 사용합니다. Windows PowerShell에서 아래 명령을 실행합니다.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+npm.cmd ci
+npm.cmd run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+터미널에 표시되는 로컬 URL을 엽니다. Vite의 기본 경로는 `/wedding-invitation/`입니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 검증
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+npm.cmd run lint
+npm.cmd run build
+npm.cmd run preview
 ```
+
+빌드는 TypeScript를 검사한 뒤 `dist/`를 생성합니다. 미리보기의 기본 주소는 `http://localhost:4173/wedding-invitation/`입니다.
+
+## GitHub Pages 배포
+
+1. 저장소의 **Settings → Pages → Build and deployment → Source**에서 **GitHub Actions**를 선택합니다.
+2. 사용자 승인 후 변경 사항을 `main`에 푸시합니다. **Deploy Wedding Invitation** 워크플로는 `npm ci`, ESLint 검사, 빌드를 실행한 뒤 `dist/`를 배포합니다.
+3. 저장소의 **Actions** 탭에서 실행 결과와 배포 URL을 확인합니다. 같은 워크플로에서 **Run workflow**를 눌러 수동으로 실행할 수도 있습니다.
+
+Vite의 `base`는 `vite.config.ts`에서 `/wedding-invitation/`으로 설정합니다. JSX에서 `public/` 파일을 참조할 때는 `import.meta.env.BASE_URL`을 사용합니다.
+
+[GitHub Pages 배포 소스 설정](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) · [Vite 정적 사이트 배포 가이드](https://vite.dev/guide/static-deploy#github-pages)
