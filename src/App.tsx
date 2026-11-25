@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
+import Directions from './Directions'
 import weddingPhoto from './assets/wedding-cover.jpg'
 import gardenPhoto from './assets/wedding-garden.jpg'
 import bouquetPhoto from './assets/wedding-bouquet.jpg'
@@ -264,13 +265,30 @@ function App() {
             <span className="invitation__heart" aria-hidden="true">♥</span>
             <span><small lang="en">BRIDE</small>{invitation.bride}</span>
           </div>
+          <div className="invitation__families">
+            <p>박복영 · 홍미자의 아들 정진</p>
+            <p>윤재호 · 이은경의 딸 수빈</p>
+          </div>
           <img className="invitation__photo" src={portraitPhoto} alt="손을 잡고 걷는 커플의 웨딩 샘플 사진" loading="lazy" />
           <div className="invitation__details invitation__details--bottom">
             <time dateTime={invitation.date}>{invitation.dateLabel}</time>
             <p>{invitation.venue}</p>
+            <p className="guestbook__note">신부대기실은 3층에 위치하고 있습니다.</p>
           </div>
         </section>
+        <Directions />
         <Guestbook />
+        <section className="invitation__section" aria-labelledby="gift-title">
+          <h2 id="gift-title">마음 전할 곳</h2>
+          <div className="invitation__accounts">
+            {['신랑측', '신부측'].map(side => (
+              <details key={side}>
+                <summary className="invitation__button">{side} 계좌번호 확인하기</summary>
+                <p>계좌 정보를 준비 중입니다.</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   )

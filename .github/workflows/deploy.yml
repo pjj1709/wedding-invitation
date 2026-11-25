@@ -42,6 +42,8 @@ jobs:
         run: npm run build
         env:
           VITE_GUESTBOOK_API_URL: ${{ vars.VITE_GUESTBOOK_API_URL }}
+          VITE_NAVER_MAP_KEY_ID: ${{ vars.VITE_NAVER_MAP_KEY_ID }}
+          VITE_KAKAO_JAVASCRIPT_KEY: ${{ vars.VITE_KAKAO_JAVASCRIPT_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v6

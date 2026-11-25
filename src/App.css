@@ -257,8 +257,84 @@
   letter-spacing: 0.12em;
 }
 
+.invitation__families {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.65rem;
+  color: #695741;
+  font-size: 0.875rem;
+}
+
+.invitation__accounts {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invitation__accounts summary {
+  width: min(100%, 18rem);
+  min-height: 2.75rem;
+}
+
+.invitation__accounts p {
+  margin-top: 0.5rem;
+  color: #695741;
+  font-size: 0.875rem;
+}
+
 .invitation__details--bottom {
   margin-inline: auto;
+}
+
+.directions__address {
+  font-style: normal;
+  word-break: keep-all;
+}
+
+.directions__address a,
+.directions__web-map {
+  color: #695741;
+}
+
+.directions__map {
+  position: absolute;
+  inset-inline: 0;
+  height: 16rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  visibility: hidden;
+}
+
+.directions__map[data-ready='true'] {
+  position: relative;
+  visibility: visible;
+}
+
+.directions__web-map {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding-block: 0.5rem;
+}
+
+.directions__label {
+  margin-block: 1rem 0.5rem;
+  color: #695741;
+  font-size: 0.875rem;
+  letter-spacing: 0.12em;
+}
+
+.directions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.directions__buttons .invitation__button {
+  min-height: 2.75rem;
+  padding-inline: 0.8rem;
+  font-size: 0.875rem;
+  text-decoration: none;
 }
 
 .guestbook__form {

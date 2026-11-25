@@ -33,6 +33,12 @@ npm.cmd run preview
 
 Vite의 `base`는 `vite.config.ts`에서 `/wedding-invitation/`으로 설정합니다. JSX에서 `public/` 파일을 참조할 때는 `import.meta.env.BASE_URL`을 사용합니다.
 
+## 지도와 내비게이션 설정
+
+GitHub 저장소의 **Settings → Secrets and variables → Actions → Variables**에서 `VITE_NAVER_MAP_KEY_ID`에 네이버 클라우드 Maps Web Dynamic Map의 Client ID를, `VITE_KAKAO_JAVASCRIPT_KEY`에 카카오 디벨로퍼스의 JavaScript 키를 등록합니다. 두 서비스의 웹 도메인에 `https://pjj1709.github.io`를 등록하고, 로컬에서 확인할 때는 개발 서버 주소도 등록합니다. 로컬 빌드는 같은 이름의 환경 변수를 사용합니다.
+
+티맵과 네이버지도 버튼은 목적지 좌표가 포함된 모바일 앱 링크를 사용합니다. 앱이 실행되지 않는 환경에서는 오시는 길 섹션의 네이버지도 웹 링크를 이용할 수 있습니다.
+
 ## 공유 방명록 설정
 
 청첩장 화면은 GitHub Pages에서 제공하고, 축하 메시지의 조회·등록·삭제는 Cloudflare Worker와 D1에서 처리합니다. 공개 목록에는 최근 100개의 메시지가 표시됩니다. 이전에 브라우저에 저장된 글은 기존 브라우저에 남아 있으며, 공유 목록으로 옮기려면 직접 다시 등록해야 합니다.
