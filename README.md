@@ -1,6 +1,6 @@
 # 모바일 청첩장
 
-React, TypeScript, Vite, ESLint로 구성한 모바일 청첩장 프로젝트입니다. 현재 화면은 Vite 초기 템플릿입니다. 청첩장 개발과 검증에는 가명과 가상의 예식 정보만 사용합니다.
+React, TypeScript, Vite, ESLint로 구성한 모바일 청첩장 프로젝트입니다. 첫 화면에는 샘플 이름, 예식 일시, 장소가 표시됩니다. 샘플 정보는 `src/App.tsx`의 `invitation`에 있습니다. 청첩장 개발과 검증에는 가명과 가상의 예식 정보만 사용합니다.
 
 목표 배포 주소는 [GitHub Pages 모바일 청첩장](https://pjj1709.github.io/wedding-invitation/)입니다.
 
