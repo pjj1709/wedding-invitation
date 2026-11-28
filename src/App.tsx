@@ -6,6 +6,8 @@ import gardenPhoto from './assets/wedding-garden.jpg'
 import bouquetPhoto from './assets/wedding-bouquet.jpg'
 import veilPhoto from './assets/wedding-veil.jpg'
 import portraitPhoto from './assets/wedding-portrait.jpg'
+import girlSilhouette from './assets/girl-sol.jpg'
+import manSilhouette from './assets/men-sol.jpg'
 
 const invitation = {
   groom: '박정진',
@@ -222,6 +224,14 @@ function WeddingCalendar({ date }: { date: string }) {
 }
 
 function App() {
+  const [introVisible, setIntroVisible] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+
+  useEffect(() => {
+    if (!introVisible) return
+    const timer = window.setTimeout(() => setIntroVisible(false), 3800)
+    return () => window.clearTimeout(timer)
+  }, [introVisible])
+
   useEffect(() => {
     const preventPhotoContextMenu = (event: MouseEvent) => {
       if (event.target instanceof HTMLImageElement) event.preventDefault()
@@ -265,52 +275,8 @@ function App() {
 
       revealItems.forEach(element => observer.observe(element))
 
-      const resetTilt = () => {
-        glass.style.setProperty('--tilt-x', '0px')
-        glass.style.setProperty('--tilt-y', '0px')
-        glass.style.setProperty('--tilt-rx', '0deg')
-        glass.style.setProperty('--tilt-ry', '0deg')
-      }
-
-      const updateTilt = (clientX: number, clientY: number) => {
-        const rect = glass.getBoundingClientRect()
-        const offsetX = (clientX - (rect.left + rect.width / 2)) / rect.width
-        const offsetY = (clientY - (rect.top + rect.height / 2)) / rect.height
-        glass.style.setProperty('--tilt-x', `${offsetX * 5}px`)
-        glass.style.setProperty('--tilt-y', `${offsetY * 5}px`)
-        glass.style.setProperty('--tilt-rx', `${offsetY * -1.5}deg`)
-        glass.style.setProperty('--tilt-ry', `${offsetX * 1.5}deg`)
-      }
-
-      let activeTouch: number | undefined
-      const onPointerMove = (event: PointerEvent) => {
-        if (event.pointerType === 'mouse') {
-          updateTilt(event.clientX, event.clientY)
-        } else if (activeTouch === event.pointerId) {
-          updateTilt(event.clientX, event.clientY)
-        }
-      }
-      const onPointerDown = (event: PointerEvent) => {
-        if (event.pointerType !== 'mouse') activeTouch = event.pointerId
-      }
-      const onPointerEnd = (event: PointerEvent) => {
-        if (activeTouch === event.pointerId) activeTouch = undefined
-        resetTilt()
-      }
-
-      glass.addEventListener('pointermove', onPointerMove)
-      glass.addEventListener('pointerdown', onPointerDown)
-      glass.addEventListener('pointerup', onPointerEnd)
-      glass.addEventListener('pointercancel', onPointerEnd)
-      glass.addEventListener('mouseleave', resetTilt)
-
       return () => {
         observer.disconnect()
-        glass.removeEventListener('pointermove', onPointerMove)
-        glass.removeEventListener('pointerdown', onPointerDown)
-        glass.removeEventListener('pointerup', onPointerEnd)
-        glass.removeEventListener('pointercancel', onPointerEnd)
-        glass.removeEventListener('mouseleave', resetTilt)
         revealItems.forEach(element => {
           element.classList.remove('invitation__reveal', 'invitation__reveal--visible')
           element.style.removeProperty('--reveal-delay')
@@ -321,6 +287,20 @@ function App() {
 
   return (
     <main className="invitation">
+      {introVisible && (
+        <section className="invitation__intro" aria-label="웨딩 인트로">
+          <p className="invitation__intro-kicker">THE BEGINNING OF FOREVER</p>
+          <div className="invitation__intro-couple" aria-hidden="true">
+            <img className="invitation__intro-person invitation__intro-person--bride" src={girlSilhouette} alt="" />
+            <span className="invitation__intro-heart">♥</span>
+            <img className="invitation__intro-person invitation__intro-person--groom" src={manSilhouette} alt="" />
+          </div>
+          <p className="invitation__intro-names">{invitation.groom} <span>♥</span> {invitation.bride}</p>
+          <button type="button" className="invitation__intro-skip" onClick={() => setIntroVisible(false)}>
+            청첩장 보기
+          </button>
+        </section>
+      )}
       <div className="invitation__glass">
         <time className="invitation__ornament" dateTime={invitation.date}>
           <span>27&nbsp; | &nbsp;04&nbsp; | &nbsp;10</span>
