@@ -222,16 +222,116 @@ function WeddingCalendar({ date }: { date: string }) {
 }
 
 function App() {
+  useEffect(() => {
+    const preventPhotoContextMenu = (event: MouseEvent) => {
+      if (event.target instanceof HTMLImageElement) event.preventDefault()
+    }
+    const preventPhotoDrag = (event: DragEvent) => {
+      if (event.target instanceof HTMLImageElement) event.preventDefault()
+    }
+
+    document.addEventListener('contextmenu', preventPhotoContextMenu)
+    document.addEventListener('dragstart', preventPhotoDrag)
+
+    return () => {
+      document.removeEventListener('contextmenu', preventPhotoContextMenu)
+      document.removeEventListener('dragstart', preventPhotoDrag)
+    }
+  }, [])
+
+  useEffect(() => {
+    const glass = document.querySelector<HTMLElement>('.invitation__glass')
+    if (!glass) return
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const revealItems = Array.from(glass.children).filter(
+      (element): element is HTMLElement => element instanceof HTMLElement,
+    )
+
+    if (!reducedMotion.matches) {
+      revealItems.forEach((element, index) => {
+        element.classList.add('invitation__reveal')
+        element.style.setProperty('--reveal-delay', `${Math.min(index * 55, 330)}ms`)
+      })
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('invitation__reveal--visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
+
+      revealItems.forEach(element => observer.observe(element))
+
+      const resetTilt = () => {
+        glass.style.setProperty('--tilt-x', '0px')
+        glass.style.setProperty('--tilt-y', '0px')
+        glass.style.setProperty('--tilt-rx', '0deg')
+        glass.style.setProperty('--tilt-ry', '0deg')
+      }
+
+      const updateTilt = (clientX: number, clientY: number) => {
+        const rect = glass.getBoundingClientRect()
+        const offsetX = (clientX - (rect.left + rect.width / 2)) / rect.width
+        const offsetY = (clientY - (rect.top + rect.height / 2)) / rect.height
+        glass.style.setProperty('--tilt-x', `${offsetX * 5}px`)
+        glass.style.setProperty('--tilt-y', `${offsetY * 5}px`)
+        glass.style.setProperty('--tilt-rx', `${offsetY * -1.5}deg`)
+        glass.style.setProperty('--tilt-ry', `${offsetX * 1.5}deg`)
+      }
+
+      let activeTouch: number | undefined
+      const onPointerMove = (event: PointerEvent) => {
+        if (event.pointerType === 'mouse') {
+          updateTilt(event.clientX, event.clientY)
+        } else if (activeTouch === event.pointerId) {
+          updateTilt(event.clientX, event.clientY)
+        }
+      }
+      const onPointerDown = (event: PointerEvent) => {
+        if (event.pointerType !== 'mouse') activeTouch = event.pointerId
+      }
+      const onPointerEnd = (event: PointerEvent) => {
+        if (activeTouch === event.pointerId) activeTouch = undefined
+        resetTilt()
+      }
+
+      glass.addEventListener('pointermove', onPointerMove)
+      glass.addEventListener('pointerdown', onPointerDown)
+      glass.addEventListener('pointerup', onPointerEnd)
+      glass.addEventListener('pointercancel', onPointerEnd)
+      glass.addEventListener('mouseleave', resetTilt)
+
+      return () => {
+        observer.disconnect()
+        glass.removeEventListener('pointermove', onPointerMove)
+        glass.removeEventListener('pointerdown', onPointerDown)
+        glass.removeEventListener('pointerup', onPointerEnd)
+        glass.removeEventListener('pointercancel', onPointerEnd)
+        glass.removeEventListener('mouseleave', resetTilt)
+        revealItems.forEach(element => {
+          element.classList.remove('invitation__reveal', 'invitation__reveal--visible')
+          element.style.removeProperty('--reveal-delay')
+        })
+      }
+    }
+  }, [])
+
   return (
     <main className="invitation">
       <div className="invitation__glass">
-        <span className="invitation__ornament" aria-hidden="true">✦</span>
+        <time className="invitation__ornament" dateTime={invitation.date}>
+          <span>27&nbsp; | &nbsp;04&nbsp; | &nbsp;10</span>
+          <small>SATURDAY</small>
+        </time>
+        <img className="invitation__photo" src={weddingPhoto} alt="밝은 예식장으로 함께 걸어가는 커플의 웨딩 샘플 사진" />
         <h1 className="invitation__names">
           <span>{invitation.groom}</span>
           <span className="invitation__heart" aria-hidden="true">♥</span>
           <span>{invitation.bride}</span>
         </h1>
-        <img className="invitation__photo" src={weddingPhoto} alt="밝은 예식장으로 함께 걸어가는 커플의 웨딩 샘플 사진" />
         <p className="invitation__message">
           저희 두 사람의 결혼식에 초대합니다.
         </p>
@@ -266,8 +366,8 @@ function App() {
             <span><small lang="en">BRIDE</small>{invitation.bride}</span>
           </div>
           <div className="invitation__families">
-            <p>박복영 · 홍미자의 아들 정진</p>
-            <p>윤재호 · 이은경의 딸 수빈</p>
+            <p>박복영 · 홍미자 의 아들 정진</p>
+            <p>윤재호 · 이은경 의 딸 수빈</p>
           </div>
           <img className="invitation__photo" src={portraitPhoto} alt="손을 잡고 걷는 커플의 웨딩 샘플 사진" loading="lazy" />
           <div className="invitation__details invitation__details--bottom">

@@ -44,6 +44,36 @@
     inset 0 -2px 5px #ffffffb3,
     0 2px 4px #453a300d,
     0 20px 64px #453a3024;
+  transform:
+    translate3d(var(--tilt-x, 0), var(--tilt-y, 0), 0)
+    perspective(900px)
+    rotateX(var(--tilt-rx, 0deg))
+    rotateY(var(--tilt-ry, 0deg));
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  touch-action: pan-y;
+  will-change: transform;
+}
+
+.invitation__reveal {
+  opacity: 0;
+  transform: translate3d(0, 1.15rem, 0) scale(0.985);
+  transition:
+    opacity 760ms var(--reveal-delay, 0ms) cubic-bezier(0.22, 1, 0.36, 1),
+    transform 760ms var(--reveal-delay, 0ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.invitation__reveal--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .invitation__glass,
+  .invitation__reveal,
+  .invitation__reveal--visible {
+    transform: none;
+    transition: none;
+  }
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -67,6 +97,12 @@
   position: relative;
 }
 
+img {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .invitation::before {
     animation: ambient-light 12s ease-in-out infinite alternate;
@@ -80,8 +116,20 @@
 }
 
 .invitation__ornament {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
   color: #695741;
-  font-size: 1.5rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.3rem, 4.5vw, 1.6rem);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+}
+
+.invitation__ornament small {
+  font-size: 0.58em;
+  letter-spacing: 0.34em;
 }
 
 .invitation__names {
@@ -91,9 +139,9 @@
   align-items: baseline;
   gap: 0.45em;
   margin-top: 1.25rem;
-  font-family: 'Noto Serif KR', 'Batang', serif;
-  font-size: clamp(1.6rem, 7vw, 2.75rem);
-  font-weight: 500;
+  font-family: 'Gowun Batang', 'Batang', serif;
+  font-size: clamp(1.225rem, 7vw, 2.375rem);
+  font-weight: 400;
   line-height: 1.2;
 }
 
@@ -143,7 +191,7 @@
 
 .wedding-calendar caption {
   margin-bottom: 0.75rem;
-  font-family: 'Noto Serif KR', 'Batang', serif;
+  font-family: 'Gowun Batang', 'Batang', serif;
   font-size: 1.25rem;
 }
 
@@ -187,7 +235,7 @@
 
 .invitation__section h2 {
   margin: 0 0 1rem;
-  font-family: Georgia, 'Batang', serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 1.35rem;
   font-weight: 500;
   letter-spacing: 0.08em;
